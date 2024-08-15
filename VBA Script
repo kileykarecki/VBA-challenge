@@ -1,0 +1,138 @@
+Sub stockmarket()
+
+
+    ' Naming variables
+    Dim ticker As String
+    Dim Qtrchange As Double
+    Dim openprice As Double
+    Dim closeprice As Double
+    Dim Percentchange As Double
+    Dim totalvolume As LongLong
+    Dim rowcount As Long
+    Dim lastrow As Long
+    Dim summarytable As Integer
+    
+    ' Variables for loops
+    Dim i As Long
+    Dim Price_Row As Long
+    
+    'forloop through ws
+    Dim ws As Worksheet
+    For Each ws In Worksheets
+    
+    ' Initialize values
+    Qtrchange = 0
+    Percentchange = 0
+    totalvolume = 0
+    summarytable = 2
+    
+    ' Headers
+    ws.Range("I1").Value = "ticker"
+    ws.Range("J1").Value = "quarterly change"
+    ws.Range("K1").Value = "percent change"
+    ws.Range("L1").Value = "total stock volume"
+    ws.Range("N2").Value = "greatest % increase"
+    ws.Range("N3").Value = "greatest % decrease"
+    ws.Range("N4").Value = "greatest total volume"
+    ws.Range("O1").Value = "ticker"
+    ws.Range("P1").Value = "value"
+    
+    ' Last row of data
+    lastrow = Cells(Rows.Count, 1).End(xlUp).Row
+    
+    ' Starting row for prices
+    Price_Row = 2
+    
+    ' Loop through all rows
+    For i = 2 To lastrow
+        
+        ' Check if the ticker has changed
+        If Cells(i + 1, 1).Value <> Cells(i, 1).Value Then
+            ticker = ws.Cells(i, 1).Value
+            totalvolume = totalvolume + ws.Cells(i, 7).Value
+            openprice = ws.Cells(Price_Row, 3).Value
+            closeprice = ws.Cells(i, 6).Value
+            Qtrchange = closeprice - openprice
+            
+            ' Calculate percentage change
+            If openprice = 0 Then
+                Percentchange = 0
+            Else
+                Percentchange = Qtrchange / openprice
+            End If
+            
+            ' Print ticker and values
+            ws.Range("I" & summarytable).Value = ticker
+            ws.Range("J" & summarytable).Value = Qtrchange
+            ws.Range("K" & summarytable).Value = Percentchange
+            ws.Range("K" & summarytable).NumberFormat = "0.00%"
+            ws.Range("L" & summarytable).Value = totalvolume
+            
+            ' Conditional formatting for quarterly change
+            If Qtrchange > 0 Then
+                ws.Range("J" & summarytable).Interior.ColorIndex = 4
+            Else
+                ws.Range("J" & summarytable).Interior.ColorIndex = 3
+            End If
+            
+            ' Move to the next row in the summary table
+            summarytable = summarytable + 1
+            
+            ' Reset total volume and move to the next Price_Row
+            totalvolume = 0
+            Price_Row = i + 1
+            
+        Else
+            ' Accumulate the total volume for the current ticker
+            totalvolume = totalvolume + ws.Cells(i, 7).Value
+        End If
+        
+    Next i
+    'add functionality
+    
+    'variables for table
+      Dim Greatest_Increase As Double
+      Dim Greatest_Decrease As Double
+      Dim Greatest_Total As Double
+      Dim Greatest_Increase_Ticker As String
+      Dim Greatest_Decrease_Ticker As String
+      Dim Greatest_Total_Ticker As String
+      
+      ws.Range("O2").Value = "Greatest % Increase"
+      ws.Range("O3").Value = "Greatest % Decrease"
+      ws.Range("O4").Value = "Greatest Total Volume"
+      
+       'set the first ticker's percent change and total stock volume as the greatest ones
+        Greatest_Increase = ws.Range("K2").Value
+        Greatest_Decrease = ws.Range("K2").Value
+        Greatest_Total = ws.Range("L2").Value
+        
+        'Define last row of Ticker column
+        Lastrow_Ticker = ws.Cells(Rows.Count, "I").End(xlUp).Row
+        
+        'Loop through each row of Ticker column to find the greatest results
+         For r = 2 To Lastrow_Ticker:
+               If ws.Range("K" & r + 1).Value > Greatest_Increase Then
+                  Greatest_Increase = ws.Range("K" & r + 1).Value
+                  Greatest_Increase_Ticker = ws.Range("I" & r + 1).Value
+               ElseIf ws.Range("K" & r + 1).Value < Greatest_Decrease Then
+                  Greatest_Decrease = ws.Range("K" & r + 1).Value
+                  Greatest_Decrease_Ticker = ws.Range("I" & r + 1).Value
+                ElseIf ws.Range("L" & r + 1).Value > Greatest_Total Then
+                  Greatest_Total = ws.Range("L" & r + 1).Value
+                  Greatest_Total_Ticker = ws.Range("I" & r + 1).Value
+                End If
+            Next r
+            
+            'Print greatest % increase, greatest % decrease, greatest total volume and their ticker names
+            ws.Range("P2").Value = Greatest_Increase_Ticker
+            ws.Range("P3").Value = Greatest_Decrease_Ticker
+            ws.Range("P4").Value = Greatest_Total_Ticker
+            ws.Range("Q2").Value = Greatest_Increase
+            ws.Range("Q3").Value = Greatest_Decrease
+            ws.Range("Q4").Value = Greatest_Total
+            ws.Range("Q2:Q3").NumberFormat = "0.00%"
+    Next ws
+        
+
+End Sub
